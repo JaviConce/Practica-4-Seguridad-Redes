@@ -42,10 +42,9 @@ func manageContenbyId(w http.ResponseWriter, r *http.Request){
 	}else{
 		username := parts[1]
 		documentName := parts[2]
-		fmt.Printf("%s\n",username)
 		token:=r.Header.Get("Authorization")
-		fmt.Printf("%s\n",token)
 		if RequestToAuthToken(token,username){
+			print("Authorize")
 			if(documentName=="_all_docs"&& r.Method==http.MethodGet){
 				//&file.getAllDocsHandler(w, r, username)
 			}else{

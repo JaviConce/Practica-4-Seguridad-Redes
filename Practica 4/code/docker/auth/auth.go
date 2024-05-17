@@ -185,7 +185,6 @@ func checkdecodeToken(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Error decoding token", http.StatusInternalServerError)
         return
     }
-	print(decodedToken)
     parts := strings.Split(string(decodedToken), "|")
     if len(parts) != 2 {
         http.Error(w, "Invalid token", http.StatusUnauthorized)
@@ -193,8 +192,6 @@ func checkdecodeToken(w http.ResponseWriter, r *http.Request) {
     }
 	
     username := parts[0]
-	print(parts[1])
-
     expirationTime, err := time.Parse(time.RFC3339, parts[1])
     if err != nil {
         http.Error(w, "Error parsing expiration time", http.StatusInternalServerError)
@@ -205,8 +202,8 @@ func checkdecodeToken(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Unauthorized", http.StatusUnauthorized)
         return
     }
-
-    fmt.Fprint(w, "OK")
+    w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "OK")
 }
 func transpass(password string)string{
 	hash := sha256.Sum256([]byte(password))
