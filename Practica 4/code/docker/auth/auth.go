@@ -42,6 +42,7 @@ func main(){
     serverAddr := "myserver.local:5001"
 	cert:=fmt.Sprintf("%sCert.crt",CertDirGlobal)
 	key:=fmt.Sprintf("%sKey.key",CertDirGlobal)
+	print("Running...")
 	log.Fatal(http.ListenAndServeTLS(serverAddr, cert, key, nil))
 }
 
@@ -129,8 +130,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request){
 }
 func writeJsonFile(data map[string]User, filePath string){
 	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-	fmt.Errorf("Error converting to JSON: %v", err)
+	if err != nil {fmt.Errorf("Error converting to JSON: %v", err)
 	}
 
 	// Crear el directorio si no existe

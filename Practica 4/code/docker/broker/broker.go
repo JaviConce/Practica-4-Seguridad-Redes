@@ -16,7 +16,7 @@ import (
 
 
 var CertDirGlobal="../../cert/"
-var globalVersion =1.0
+var globalVersion =2.0
 func main() {
 
 	//MANEJO DE PETICIONES
@@ -44,27 +44,26 @@ func manageContenbyId(w http.ResponseWriter, r *http.Request){
 		documentName := parts[2]
 		token:=r.Header.Get("Authorization")
 		if RequestToAuthToken(token,username){
-			print("Authorize")
 			if(documentName=="_all_docs"&& r.Method==http.MethodGet){
-				//&file.getAllDocsHandler(w, r, username)
+				redirectFile(1)(w,r)
 			}else{
-				//switch r.Method {
-				//case http.MethodGet:
-				//	// Manejar el método GET
-				//	&file.getContentByIdHandler(w, r, username, documentName)
-				//case http.MethodPost:
-				//	// Manejar el método POST
-				//	&file.postContentByIdHandler(w, r, username, documentName)
-				//case http.MethodPut:
-				//	// Manejar el método PUT
-				//	&file.putContentByIdHandler(w, r, username, documentName)
-				//case http.MethodDelete:
-				//	// Manejar el método DELETE
-				//	&file.deleteContentByIdHandler(w, r, username, documentName)
-				//default:
-				//	w.WriteHeader(http.StatusMethodNotAllowed)
-				//	fmt.Fprint(w, "Method not allowed\n")
-				//}
+				switch r.Method {
+				case http.MethodGet:
+					// Manejar el método GET
+					redirectFile(1)(w,r)
+				case http.MethodPost:
+					// Manejar el método POST
+					redirectFile(2)(w,r)
+				case http.MethodPut:
+					// Manejar el método PUT
+					redirectFile(3)(w,r)
+				case http.MethodDelete:
+					// Manejar el método DELETE
+					redirectFile(4)(w,r)
+				default:
+					w.WriteHeader(http.StatusMethodNotAllowed)
+					fmt.Fprint(w, "Method not allowed\n")
+				}
 			}
 		}else{
 			w.WriteHeader(http.StatusUnauthorized)
@@ -97,6 +96,38 @@ func redirectAuth(option int) func(w http.ResponseWriter, r *http.Request) {
         w.Write(body)
     }
 }
+func redirectFile (option int) func(w http.ResponseWriter, r *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        client := aux()
+		var resp *http.Response
+        var err error
+		switch option {
+		case 1:
+			resp, err = client.Get("https://myserver.local:5002" + r.URL.Path)
+		case 2:
+			resp, err = client.Post("https://myserver.local:5002" + r.URL.Path, "application/json", r.Body)
+		case 3:
+			req, _ := http.NewRequest("DELETE", "https://myserver.local:5002"+r.URL.Path, r.Body)
+			req.Header.Set("Content-Type", "application/json")
+			resp, err = client.Do(req)
+		case 4:
+			req, _ := http.NewRequest("PUT", "https://myserver.local:5002"+r.URL.Path, r.Body)
+			req.Header.Set("Content-Type", "application/json")
+			resp, err = client.Do(req)
+		}
+		
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			print("Error\n")
+			return
+        }
+
+        defer resp.Body.Close()
+        body, _ := io.ReadAll(resp.Body)
+        w.Write(body)
+	}
+}
+
 func RequestToAuthToken(token string, username string) (bool) {
     // Crear un cliente HTTP
     client := aux()

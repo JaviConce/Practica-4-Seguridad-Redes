@@ -1,16 +1,15 @@
-package file
+package main
 
 import (
 	"encoding/json"
-	"path/filepath"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
-
 )
-
 
 type User struct {
 	Username string `json:"username"`
@@ -22,18 +21,52 @@ type Document struct {
 
 var userDatabase map[string]User
 var mutex sync.Mutex
-var MainDirGlobal="../data/"
-var CertDirGlobal="../cert/"
+var MainDirGlobal="../../data/"
+var CertDirGlobal="../../cert/"
 var globalVersion =1.0
 
 func main(){
-	http.HandleFunc("/signup", signupHandler)
-    http.HandleFunc("/login", loginHandler)
-    serverAddr := "myserver.local:5001"
+
+
+	http.HandleFunc("/", manageContenbyId)
+    //http.HandleFunc("/login", loginHandler)
+    serverAddr := "myserver.local:5002"
 	cert:=fmt.Sprintf("%sCert.crt",CertDirGlobal)
 	key:=fmt.Sprintf("%sKey.key",CertDirGlobal)
+	print("Running...")
 	log.Fatal(http.ListenAndServeTLS(serverAddr, cert, key, nil))
 }
+
+func manageContenbyId(w http.ResponseWriter, r *http.Request){
+		path:=r.URL.Path
+		parts := strings.Split(path, "/")
+			username:=parts[1]
+			documentName:=parts[2]
+			print("hola")
+		if(documentName=="_all_docs"&& r.Method==http.MethodGet){
+			print("Pasa el filtro")
+			getAllDocsHandler(w, r,username)
+		}else{
+			switch r.Method {
+			case http.MethodGet:
+				// Manejar el método GET
+				getContentByIdHandler(w, r, username, documentName)
+			case http.MethodPost:
+				// Manejar el método POST
+				postContentByIdHandler(w, r, username, documentName)
+			case http.MethodPut:
+				// Manejar el método PUT
+				putContentByIdHandler(w, r, username, documentName)
+			case http.MethodDelete:
+				// Manejar el método DELETE
+				deleteContentByIdHandler(w, r, username, documentName)
+			default:
+				w.WriteHeader(http.StatusMethodNotAllowed)
+				fmt.Fprint(w, "Method not allowed\n")
+			}
+		}
+}
+
 
 func getContentByIdHandler(w http.ResponseWriter, r *http.Request,username string, docname string ){
 	dir:=MainDirGlobal
@@ -48,6 +81,11 @@ func getContentByIdHandler(w http.ResponseWriter, r *http.Request,username strin
 	w.Write(jsonData)
 }
 func getAllDocsHandler(w http.ResponseWriter, r *http.Request,username string){
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprint(w, "Method not allowed\n")
+		return
+	}
 	dir:=MainDirGlobal
 	path := fmt.Sprintf("%s%s",dir,username,)
 	archivos, err := os.ReadDir(path)
@@ -81,6 +119,7 @@ func getAllDocsHandler(w http.ResponseWriter, r *http.Request,username string){
 		http.Error(w, "Error converting to JSON\n", http.StatusInternalServerError)
 		return
 	}
+	print(jsonData)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonData)
 }
