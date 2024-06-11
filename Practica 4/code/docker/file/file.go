@@ -42,9 +42,7 @@ func manageContenbyId(w http.ResponseWriter, r *http.Request){
 		parts := strings.Split(path, "/")
 			username:=parts[1]
 			documentName:=parts[2]
-			print("hola")
-		if(documentName=="_all_docs"&& r.Method==http.MethodGet){
-			print("Pasa el filtro")
+		if(documentName=="_all_docs" && r.Method==http.MethodGet){
 			getAllDocsHandler(w, r,username)
 		}else{
 			switch r.Method {
@@ -126,7 +124,7 @@ func getAllDocsHandler(w http.ResponseWriter, r *http.Request,username string){
 func postContentByIdHandler(w http.ResponseWriter, r *http.Request,username string, docname string ){
 	dir:=MainDirGlobal
 	path := fmt.Sprintf("%s%s/%s%s",dir,username,docname,".json")
-	
+	print(path)
 	var newDoc Document
 	err := json.NewDecoder(r.Body).Decode(&newDoc)
 	if err != nil {

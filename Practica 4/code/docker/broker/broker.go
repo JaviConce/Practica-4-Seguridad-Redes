@@ -107,13 +107,14 @@ func redirectFile (option int) func(w http.ResponseWriter, r *http.Request) {
 		case 2:
 			resp, err = client.Post("https://myserver.local:5002" + r.URL.Path, "application/json", r.Body)
 		case 3:
-			req, _ := http.NewRequest("DELETE", "https://myserver.local:5002"+r.URL.Path, r.Body)
-			req.Header.Set("Content-Type", "application/json")
-			resp, err = client.Do(req)
-		case 4:
 			req, _ := http.NewRequest("PUT", "https://myserver.local:5002"+r.URL.Path, r.Body)
 			req.Header.Set("Content-Type", "application/json")
 			resp, err = client.Do(req)
+		case 4:
+			req, _ := http.NewRequest("DELETE", "https://myserver.local:5002"+r.URL.Path, r.Body)
+			req.Header.Set("Content-Type", "application/json")
+			resp, err = client.Do(req)
+			
 		}
 		
 		if err != nil {
