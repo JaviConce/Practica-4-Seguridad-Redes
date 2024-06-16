@@ -8,7 +8,7 @@ RUN apt-get update && \
 	tcpdump \
 	iputils-ping \
 	nano \
- 	less \
+	less \
 	openssh-server \
 	rsyslog \
 	curl \
