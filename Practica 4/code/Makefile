@@ -1,4 +1,18 @@
+.PHONY: file auth broker
 all: build network containers
+
+test:
+	python3 Test/Testing.py
+go: auth broker file
+
+auth:
+	cd docker/auth/AuthCode && go build auth.go && mv auth ..
+broker:
+	cd docker/broker/BrokerCode && go build broker.go && mv broker ..
+file:
+	cd docker/file/Filecode && go build file.go && mv file ..
+
+
 containers:
 	docker run --privileged -p 5000:5000 --rm -ti -d --name router --hostname router midebian-router
 	docker network connect dmz router 
@@ -28,7 +42,6 @@ network:
 	docker network create -d bridge --subnet 10.0.1.0/24 dmz
 	docker network create -d bridge --subnet 10.0.2.0/24 srv
 	docker network create -d bridge --subnet 10.0.3.0/24 dev
-
 
 remove:
 	docker stop router work jump broker file auth
